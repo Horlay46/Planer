@@ -4310,7 +4310,7 @@ async function authSubmit() {
   if (username.length < 2) { authShowError('Nutzername muss mindestens 2 Zeichen haben.'); return; }
   if (password.length < 6) { authShowError('Passwort muss mindestens 6 Zeichen haben.'); return; }
   // Convert username to internal pseudo-email (never shown to user)
-  const email = username + '@studienplaner.local';
+  const email = username + '@studienplaner.app';
 
   btn.textContent = '...';
   btn.disabled = true;
@@ -4372,8 +4372,8 @@ async function authOnLogin(user) {
   const name = (user.user_metadata && user.user_metadata.name) || email.split('@')[0];
   document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
   document.getElementById('userEmailLabel').textContent = name;
-  // Show username (strip @studienplaner.local from fake email)
-  const displayEmail = email.endsWith('@studienplaner.local') ? email.replace('@studienplaner.local', '') : email;
+  // Show username (strip @studienplaner.app from fake email)
+  const displayEmail = email.endsWith('@studienplaner.app') ? email.replace('@studienplaner.app', '') : email;
   document.getElementById('userMenuEmail').textContent = displayEmail;
   document.getElementById('userBadge').style.display = 'flex';
 
