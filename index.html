@@ -3983,7 +3983,7 @@ function massImportParseRows(rows) {
   }
 
   function makePeriodName(startDate) {
-    const mn = ['Jan','Feb','M\u00e4r','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    const mn = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
     const s = new Date(startDate + 'T12:00:00');
     const e = new Date(s.getFullYear(), s.getMonth() + 1, 15);
     const sy = String(s.getFullYear()).slice(2), ey = String(e.getFullYear()).slice(2);
@@ -4534,12 +4534,12 @@ async function startupWithAuth() {
 // MODULE SYSTEM
 // =====================================================
 const ALL_MODULES = [
-  { id: 'stundenplan', label: 'Stundenplan',      icon: 'fa-calendar-week', desc: 'W\u00f6chentlicher Stundenplan' },
+  { id: 'stundenplan', label: 'Stundenplan',      icon: 'fa-calendar-week', desc: 'Wöchentlicher Stundenplan' },
   { id: 'aufgaben',   label: 'Uni-Aufgaben',      icon: 'fa-check-square',  desc: 'Aufgaben und To-Dos' },
   { id: 'abgaben',    label: 'Abgaben',            icon: 'fa-clock',         desc: 'Abgabefristen im Blick' },
-  { id: 'sport',      label: 'Sport',              icon: 'fa-running',       desc: 'Sportplan und Aktivit\u00e4ten' },
+  { id: 'sport',      label: 'Sport',              icon: 'fa-running',       desc: 'Sportplan und Aktivitäten' },
   { id: 'arbeit',     label: 'Arbeitszeiten',      icon: 'fa-briefcase',     desc: 'Werkstudenten-Zeiterfassung' },
-  { id: 'checkliste', label: 'Tages-Checkliste',   icon: 'fa-list-check',    desc: 'T\u00e4gliche Aufgabenliste' },
+  { id: 'checkliste', label: 'Tages-Checkliste',   icon: 'fa-list-check',    desc: 'Tägliche Aufgabenliste' },
 ];
 const MODULE_STORE_KEY = 'sp_active_modules';
 const DEFAULT_MODULES = ['stundenplan','aufgaben','abgaben','sport','arbeit','checkliste'];
@@ -4807,8 +4807,8 @@ function initModules() {
 <div class="modal-overlay" id="moduleWizard" style="z-index:9998">
   <div class="modal" style="max-width:500px;width:100%">
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:800">Willkommen! \U0001F44B</div>
-      <div style="font-size:0.85rem;color:var(--text-2);margin-top:6px">Welche Module m\u00f6chtest du nutzen? Du kannst das jederzeit in den Einstellungen \u00e4ndern.</div>
+      <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:800">Willkommen! 👋</div>
+      <div style="font-size:0.85rem;color:var(--text-2);margin-top:6px">Welche Module möchtest du nutzen? Du kannst das jederzeit in den Einstellungen ändern.</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
       <label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface2)" id="wizLabel_stundenplan" onclick="wizToggle('stundenplan')">
@@ -4873,7 +4873,7 @@ function initModules() {
       </label>
     </div>
     <button onclick="wizardConfirm()" class="btn btn-primary" style="width:100%;padding:12px;font-size:0.95rem">
-      Los geht\u2019s \u2192
+      Los geht's →
     </button>
   </div>
 </div>
