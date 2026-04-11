@@ -1239,18 +1239,7 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
 @keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateY(8px); } }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script>
-// Supabase SDK loader with fallback
-(function() {
-  var script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  script.onerror = function() {
-    console.error('Failed to load Supabase SDK');
-  };
-  document.head.appendChild(script);
-})();
-</script>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -3354,7 +3343,7 @@ function escHtml(s) {
 // INIT
 // =====================================================
 // App init is now handled by startupWithAuth()
-startupWithAuth();
+window.addEventListener("load", startupWithAuth);
 
 // =====================================================
 // IMPORT MODULE: Excel / CSV
@@ -4498,11 +4487,11 @@ function initApp() {
 
 // ── Startup ───────────────────────────────────────────────────────────────────
 async function startupWithAuth() {
-  // Wait up to 3s for Supabase SDK to load
+  // Wait up to 8s for Supabase SDK to load
   let waited = 0;
-  while (typeof window.supabase === 'undefined' && waited < 3000) {
-    await new Promise(function(r) { setTimeout(r, 100); });
-    waited += 100;
+  while (typeof window.supabase === 'undefined' && waited < 8000) {
+    await new Promise(function(r) { setTimeout(r, 200); });
+    waited += 200;
   }
   initSupabase();
   if (!supabaseClient) {
