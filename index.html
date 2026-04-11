@@ -1296,24 +1296,9 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
   </div>
 </div>
 
-<!-- USER BADGE (top right when logged in) -->
-<div id="userBadge" style="display:none;position:fixed;top:12px;right:16px;z-index:200;display:flex;align-items:center;gap:8px">
-  <div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px 4px 8px;display:flex;align-items:center;gap:6px;cursor:pointer" onclick="authShowUserMenu()">
-    <div style="width:24px;height:24px;border-radius:50%;background:#E84855;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#fff" id="userAvatar">?</div>
-    <span style="font-size:0.78rem;color:rgba(232,240,254,0.9);font-weight:500" id="userEmailLabel"></span>
-  </div>
-</div>
+<!-- user badge moved to sidebar -->
 
-<!-- USER MENU DROPDOWN -->
-<div id="userMenu" style="display:none;position:fixed;top:50px;right:16px;z-index:300;background:var(--surface,#fff);border:1px solid var(--border,#E5E0D8);border-radius:12px;padding:8px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,0.15)">
-  <div style="padding:8px 12px;font-size:0.82rem;color:var(--text-2,#6B6560);border-bottom:1px solid var(--border,#E5E0D8);margin-bottom:6px" id="userMenuEmail"></div>
-  <button onclick="authSync()" style="width:100%;text-align:left;padding:8px 12px;border:none;background:none;border-radius:6px;font-size:0.85rem;cursor:pointer;color:var(--text,#1C1917);font-family:'DM Sans',sans-serif">
-    <i class="fa fa-cloud-arrow-up" style="width:18px;color:#2EC4B6"></i> Daten synchronisieren
-  </button>
-  <button onclick="authLogout()" style="width:100%;text-align:left;padding:8px 12px;border:none;background:none;border-radius:6px;font-size:0.85rem;cursor:pointer;color:#E84855;font-family:'DM Sans',sans-serif">
-    <i class="fa fa-right-from-bracket" style="width:18px"></i> Abmelden
-  </button>
-</div>
+<!-- user menu moved to sidebar -->
 
 
 <!-- MOBILE HEADER -->
@@ -1354,6 +1339,27 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
     </button>
   </div>
   <div class="sidebar-bottom">
+    <!-- User account button (shown when logged in) -->
+    <div id="userBadge" style="display:none;margin-bottom:6px;position:relative">
+      <button onclick="authShowUserMenu()" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.05);border:none;color:rgba(255,255,255,0.8);font-size:0.83rem;font-family:var(--font-body);cursor:pointer;transition:all var(--transition);text-align:left">
+        <div style="width:28px;height:28px;border-radius:50%;background:#E84855;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;color:#fff;flex-shrink:0" id="userAvatar">?</div>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="userEmailLabel"></span>
+        <i class="fa fa-chevron-up" style="font-size:0.65rem;opacity:0.5"></i>
+      </button>
+      <!-- Dropdown -->
+      <div id="userMenu" style="display:none;position:absolute;bottom:100%;left:0;right:0;margin-bottom:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;box-shadow:var(--shadow-lg);z-index:300">
+        <div style="padding:6px 10px;font-size:0.75rem;color:var(--text-3);border-bottom:1px solid var(--border);margin-bottom:4px" id="userMenuEmail"></div>
+        <button onclick="authSync()" style="width:100%;text-align:left;padding:7px 10px;border:none;background:none;border-radius:4px;font-size:0.82rem;cursor:pointer;color:var(--text);font-family:var(--font-body)">
+          <i class="fa fa-cloud-arrow-up" style="width:16px;color:#2EC4B6"></i> Synchronisieren
+        </button>
+        <button onclick="openModuleSettings()" style="width:100%;text-align:left;padding:7px 10px;border:none;background:none;border-radius:4px;font-size:0.82rem;cursor:pointer;color:var(--text);font-family:var(--font-body)">
+          <i class="fa fa-grid-2" style="width:16px;color:var(--accent)"></i> Module verwalten
+        </button>
+        <button onclick="authLogout()" style="width:100%;text-align:left;padding:7px 10px;border:none;background:none;border-radius:4px;font-size:0.82rem;cursor:pointer;color:var(--red);font-family:var(--font-body)">
+          <i class="fa fa-right-from-bracket" style="width:16px"></i> Abmelden
+        </button>
+      </div>
+    </div>
     <button class="theme-toggle" onclick="toggleTheme()">
       <i class="fa fa-moon" id="themeIcon"></i>
       <span id="themeLabel">Dunkelmodus</span>
@@ -4375,7 +4381,7 @@ async function authOnLogin(user) {
   // Show username (strip @studienplaner.app from fake email)
   const displayEmail = email.endsWith('@studienplaner.app') ? email.replace('@studienplaner.app', '') : email;
   document.getElementById('userMenuEmail').textContent = displayEmail;
-  document.getElementById('userBadge').style.display = 'flex';
+  document.getElementById('userBadge').style.display = 'block';
 
   // Load data from cloud, then init app
   await authLoadFromCloud();
@@ -4452,7 +4458,8 @@ async function authLogout() {
 
 function authShowUserMenu() {
   const menu = document.getElementById('userMenu');
-  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
 }
 function authHideUserMenu() {
   document.getElementById('userMenu').style.display = 'none';
@@ -4462,7 +4469,7 @@ function authHideUserMenu() {
 document.addEventListener('click', function(e) {
   const badge = document.getElementById('userBadge');
   const menu = document.getElementById('userMenu');
-  if (badge && menu && !badge.contains(e.target) && !menu.contains(e.target)) {
+  if (badge && menu && !badge.contains(e.target)) {
     menu.style.display = 'none';
   }
 });
@@ -4483,6 +4490,7 @@ function initApp() {
   renderSport();
   initArbeit();
   renderChecklist();
+  initModules();
 }
 
 // ── Startup ───────────────────────────────────────────────────────────────────
@@ -4519,6 +4527,170 @@ async function startupWithAuth() {
       currentUser = null;
     }
   });
+}
+
+
+// =====================================================
+// MODULE SYSTEM
+// =====================================================
+const ALL_MODULES = [
+  { id: 'stundenplan', label: 'Stundenplan',      icon: 'fa-calendar-week', desc: 'W\u00f6chentlicher Stundenplan' },
+  { id: 'aufgaben',   label: 'Uni-Aufgaben',      icon: 'fa-check-square',  desc: 'Aufgaben und To-Dos' },
+  { id: 'abgaben',    label: 'Abgaben',            icon: 'fa-clock',         desc: 'Abgabefristen im Blick' },
+  { id: 'sport',      label: 'Sport',              icon: 'fa-running',       desc: 'Sportplan und Aktivit\u00e4ten' },
+  { id: 'arbeit',     label: 'Arbeitszeiten',      icon: 'fa-briefcase',     desc: 'Werkstudenten-Zeiterfassung' },
+  { id: 'checkliste', label: 'Tages-Checkliste',   icon: 'fa-list-check',    desc: 'T\u00e4gliche Aufgabenliste' },
+];
+const MODULE_STORE_KEY = 'sp_active_modules';
+const DEFAULT_MODULES = ['stundenplan','aufgaben','abgaben','sport','arbeit','checkliste'];
+
+let wizardSelected = new Set(DEFAULT_MODULES);
+
+function getActiveModules() {
+  try {
+    const saved = localStorage.getItem(MODULE_STORE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return null; // null = not yet configured (show wizard)
+}
+
+function setActiveModules(arr) {
+  localStorage.setItem(MODULE_STORE_KEY, JSON.stringify(arr));
+}
+
+function applyModules(activeIds) {
+  // Show/hide nav items and pages
+  ALL_MODULES.forEach(function(m) {
+    const active = activeIds.includes(m.id);
+    // Nav item
+    const navBtns = document.querySelectorAll('.nav-item');
+    navBtns.forEach(function(btn) {
+      if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + m.id + "'")) {
+        btn.style.display = active ? '' : 'none';
+      }
+    });
+    // Page
+    const page = document.getElementById('page-' + m.id);
+    if (page) page.style.display = active ? '' : 'none';
+  });
+
+  // If current page is hidden, go to overview
+  const activePage = document.querySelector('.page.active');
+  if (activePage && activePage.style.display === 'none') {
+    navigateByName('uebersicht');
+  }
+}
+
+// ── Wizard ────────────────────────────────────────────────────────────────────
+function wizToggle(id) {
+  if (wizardSelected.has(id)) {
+    wizardSelected.delete(id);
+  } else {
+    wizardSelected.add(id);
+  }
+  updateWizUI();
+}
+
+function updateWizUI() {
+  ALL_MODULES.forEach(function(m) {
+    const label = document.getElementById('wizLabel_' + m.id);
+    const check = document.getElementById('wizCheck_' + m.id);
+    if (!label || !check) return;
+    const active = wizardSelected.has(m.id);
+    label.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+    label.style.background = active ? 'var(--accent-dim)' : 'var(--surface2)';
+    check.style.background = active ? 'var(--accent)' : 'none';
+    check.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+    check.innerHTML = active ? '<i class="fa fa-check" style="color:white;font-size:0.6rem"></i>' : '';
+  });
+}
+
+function showWizard() {
+  // Pre-select all by default
+  wizardSelected = new Set(DEFAULT_MODULES);
+  updateWizUI();
+  openModal('moduleWizard');
+}
+
+function wizardConfirm() {
+  const selected = Array.from(wizardSelected);
+  if (!selected.length) {
+    alert('Bitte mindestens ein Modul ausw\u00e4hlen.');
+    return;
+  }
+  setActiveModules(selected);
+  applyModules(selected);
+  closeModal('moduleWizard');
+  showToast('Module gespeichert', 'ok');
+}
+
+// ── Module Settings (from account menu) ──────────────────────────────────────
+function openModuleSettings() {
+  authHideUserMenu();
+  const active = getActiveModules() || DEFAULT_MODULES;
+  const list = document.getElementById('moduleSettingsList');
+  if (!list) return;
+
+  list.innerHTML = ALL_MODULES.map(function(m) {
+    const isActive = active.includes(m.id);
+    return '<label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid ' + (isActive ? 'var(--accent)' : 'var(--border)') + ';border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:' + (isActive ? 'var(--accent-dim)' : 'var(--surface2)') + '" id="modSetLabel_' + m.id + '" onclick="modSetToggle(\'' + m.id + '\')">'
+      + '<div style="width:32px;height:32px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+      + '<i class="fa ' + m.icon + '" style="color:var(--accent)"></i></div>'
+      + '<div style="flex:1"><div style="font-weight:600;font-size:0.88rem">' + m.label + '</div>'
+      + '<div style="font-size:0.73rem;color:var(--text-3)">' + m.desc + '</div></div>'
+      + '<div style="width:20px;height:20px;border-radius:50%;border:2px solid ' + (isActive ? 'var(--accent)' : 'var(--border)') + ';background:' + (isActive ? 'var(--accent)' : 'none') + ';flex-shrink:0;display:flex;align-items:center;justify-content:center" id="modSetCheck_' + m.id + '">'
+      + (isActive ? '<i class="fa fa-check" style="color:white;font-size:0.6rem"></i>' : '')
+      + '</div></label>';
+  }).join('');
+
+  openModal('moduleSettingsModal');
+}
+
+let modSetSelected = null;
+function modSetToggle(id) {
+  if (!modSetSelected) {
+    const active = getActiveModules() || DEFAULT_MODULES;
+    modSetSelected = new Set(active);
+  }
+  if (modSetSelected.has(id)) {
+    modSetSelected.delete(id);
+  } else {
+    modSetSelected.add(id);
+  }
+  // Update UI
+  ALL_MODULES.forEach(function(m) {
+    const label = document.getElementById('modSetLabel_' + m.id);
+    const check = document.getElementById('modSetCheck_' + m.id);
+    if (!label || !check) return;
+    const active = modSetSelected.has(m.id);
+    label.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+    label.style.background = active ? 'var(--accent-dim)' : 'var(--surface2)';
+    check.style.background = active ? 'var(--accent)' : 'none';
+    check.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+    check.innerHTML = active ? '<i class="fa fa-check" style="color:white;font-size:0.6rem"></i>' : '';
+  });
+}
+
+function saveModuleSettings() {
+  if (!modSetSelected) return;
+  const selected = Array.from(modSetSelected);
+  if (!selected.length) { alert('Bitte mindestens ein Modul ausw\u00e4hlen.'); return; }
+  setActiveModules(selected);
+  applyModules(selected);
+  modSetSelected = null;
+  closeModal('moduleSettingsModal');
+  showToast('Module aktualisiert', 'ok');
+}
+
+// ── Called after login ────────────────────────────────────────────────────────
+function initModules() {
+  const saved = getActiveModules();
+  if (saved === null) {
+    // First time - show wizard after short delay
+    setTimeout(showWizard, 400);
+  } else {
+    applyModules(saved);
+  }
 }
 
 </script>
@@ -4626,6 +4798,97 @@ async function startupWithAuth() {
       <button class="btn btn-ghost" onclick="massImportDownloadTemplate()" style="margin-right:auto"><i class="fa fa-download"></i> Vorlage herunterladen</button>
       <button class="btn btn-ghost" onclick="closeModal('massImportModal')">Abbrechen</button>
       <button class="btn btn-primary" id="massImportConfirmBtn" disabled onclick="massImportConfirm()"><i class="fa fa-check"></i> Importieren</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODULE SETUP WIZARD -->
+<div class="modal-overlay" id="moduleWizard" style="z-index:9998">
+  <div class="modal" style="max-width:500px;width:100%">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:800">Willkommen! \U0001F44B</div>
+      <div style="font-size:0.85rem;color:var(--text-2);margin-top:6px">Welche Module m\u00f6chtest du nutzen? Du kannst das jederzeit in den Einstellungen \u00e4ndern.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
+      <label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface2)" id="wizLabel_stundenplan" onclick="wizToggle('stundenplan')">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa fa-calendar-week" style="color:var(--accent)"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">Stundenplan</div>
+          <div style="font-size:0.75rem;color:var(--text-3)">Wöchentlicher Stundenplan</div>
+        </div>
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition)" id="wizCheck_stundenplan"></div>
+      </label>
+      <label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface2)" id="wizLabel_aufgaben" onclick="wizToggle('aufgaben')">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa fa-check-square" style="color:var(--accent)"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">Uni-Aufgaben</div>
+          <div style="font-size:0.75rem;color:var(--text-3)">Aufgaben und To-Dos</div>
+        </div>
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition)" id="wizCheck_aufgaben"></div>
+      </label>
+      <label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface2)" id="wizLabel_abgaben" onclick="wizToggle('abgaben')">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa fa-clock" style="color:var(--accent)"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">Abgaben</div>
+          <div style="font-size:0.75rem;color:var(--text-3)">Abgabefristen im Blick behalten</div>
+        </div>
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition)" id="wizCheck_abgaben"></div>
+      </label>
+      <label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface2)" id="wizLabel_sport" onclick="wizToggle('sport')">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa fa-running" style="color:var(--accent)"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">Sport</div>
+          <div style="font-size:0.75rem;color:var(--text-3)">Sportplan und Aktivitäten</div>
+        </div>
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition)" id="wizCheck_sport"></div>
+      </label>
+      <label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface2)" id="wizLabel_arbeit" onclick="wizToggle('arbeit')">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa fa-briefcase" style="color:var(--accent)"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">Arbeitszeiten</div>
+          <div style="font-size:0.75rem;color:var(--text-3)">Werkstudenten-Zeiterfassung</div>
+        </div>
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition)" id="wizCheck_arbeit"></div>
+      </label>
+      <label style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition);background:var(--surface2)" id="wizLabel_checkliste" onclick="wizToggle('checkliste')">
+        <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa fa-list-check" style="color:var(--accent)"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.9rem">Tages-Checkliste</div>
+          <div style="font-size:0.75rem;color:var(--text-3)">Tägliche Aufgabenliste</div>
+        </div>
+        <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--border);background:none;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--transition)" id="wizCheck_checkliste"></div>
+      </label>
+    </div>
+    <button onclick="wizardConfirm()" class="btn btn-primary" style="width:100%;padding:12px;font-size:0.95rem">
+      Los geht\u2019s \u2192
+    </button>
+  </div>
+</div>
+
+<!-- MODULE SETTINGS MODAL -->
+<div class="modal-overlay" id="moduleSettingsModal" onclick="if(event.target===this)closeModal('moduleSettingsModal')">
+  <div class="modal" style="max-width:500px;width:100%">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 class="modal-title">Module verwalten</h2>
+      <button class="btn-icon" onclick="closeModal('moduleSettingsModal')"><i class="fa fa-times"></i></button>
+    </div>
+    <div style="font-size:0.82rem;color:var(--text-2);margin-bottom:16px">Aktive Module erscheinen in der Seitenleiste.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px" id="moduleSettingsList"></div>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" onclick="saveModuleSettings()">Speichern</button>
     </div>
   </div>
 </div>
