@@ -1380,14 +1380,8 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
         <i class="fa fa-chevron-down nav-group-chevron"></i>
       </div>
       <div class="nav-group-items">
-        <button class="nav-item nav-item-sub" onclick="navigate('arbeitskalender', this)" data-page="arbeitskalender">
-          <i class="fa fa-calendar-days"></i> Kalender
-        </button>
         <button class="nav-item nav-item-sub" onclick="navigate('arbeit', this)" data-page="arbeit">
           <i class="fa fa-business-time"></i> Arbeitszeiten
-        </button>
-        <button class="nav-item nav-item-sub" onclick="navigate('checkliste-arbeit', this)" data-page="checkliste-arbeit">
-          <i class="fa fa-list-check"></i> Checkliste
         </button>
       </div>
     </div>
@@ -1408,21 +1402,6 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
       </div>
     </div>
 
-    <!-- Privates -->
-    <div class="nav-group open" id="navGroup-privat">
-      <div class="nav-group-header" onclick="toggleNavGroup('privat')">
-        <span class="nav-group-label"><i class="fa fa-user" style="margin-right:5px;font-size:0.65rem"></i>Privates</span>
-        <i class="fa fa-chevron-down nav-group-chevron"></i>
-      </div>
-      <div class="nav-group-items">
-        <button class="nav-item nav-item-sub" onclick="navigate('privatkalender', this)" data-page="privatkalender">
-          <i class="fa fa-calendar"></i> Kalender
-        </button>
-        <button class="nav-item nav-item-sub" onclick="navigate('checkliste', this)" data-page="checkliste">
-          <i class="fa fa-list-check"></i> Checkliste
-        </button>
-      </div>
-    </div>
   </div>
   <div class="sidebar-bottom">
     <!-- User account button (shown when logged in) -->
@@ -1461,6 +1440,8 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
     <div id="dashGreeting" class="dash-greeting"></div>
     <div id="dashDateSub" class="dash-date-sub"></div>
     <div class="dash-grid" id="dashKpis"></div>
+
+    <!-- Row 1: Aufgaben + Abgaben -->
     <div class="dash-two-col">
       <div class="card">
         <div class="dash-section-title"><i class="fa fa-triangle-exclamation"></i> Offene Aufgaben <button class="dash-nav-link" onclick="navigateByName('aufgaben')">Alle →</button></div>
@@ -1471,16 +1452,40 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
         <div id="dashDeadlines"></div>
       </div>
     </div>
+
+    <!-- Row 2: Kalender (full width) -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="dash-section-title" style="margin-bottom:12px">
+        <i class="fa fa-calendar"></i> Kalender
+        <div style="display:flex;gap:8px;align-items:center;margin-left:auto">
+          <button class="btn btn-ghost btn-sm" onclick="dashKalPrev()"><i class="fa fa-chevron-left"></i></button>
+          <span id="dashKalLabel" style="font-size:0.85rem;font-weight:600;min-width:120px;text-align:center"></span>
+          <button class="btn btn-ghost btn-sm" onclick="dashKalNext()"><i class="fa fa-chevron-right"></i></button>
+          <button class="btn btn-primary btn-sm" onclick="kalOpenNew('privat')"><i class="fa fa-plus"></i></button>
+        </div>
+      </div>
+      <div id="dashKalGrid"></div>
+    </div>
+
+    <!-- Row 3: Checkliste + Sport -->
     <div class="dash-two-col">
       <div class="card">
-        <div class="dash-section-title"><i class="fa fa-list-check"></i> Heutige Checkliste <button class="dash-nav-link" onclick="navigateByName('checkliste')">Öffnen →</button></div>
-        <div id="dashChecklist"></div>
+        <div class="dash-section-title">
+          <i class="fa fa-list-check"></i> Checkliste
+        </div>
+        <div class="checklist-add-row" style="margin-top:10px">
+          <input type="text" id="checklistInput" placeholder="Neue Aufgabe…" onkeydown="if(event.key==='Enter')addChecklistItem()" style="font-size:0.82rem">
+          <button class="btn btn-primary" onclick="addChecklistItem()"><i class="fa fa-plus"></i></button>
+        </div>
+        <div id="dashChecklist" style="margin-top:8px"></div>
       </div>
       <div class="card">
         <div class="dash-section-title"><i class="fa fa-dumbbell"></i> Sport heute <button class="dash-nav-link" onclick="navigateByName('sport')">Öffnen →</button></div>
         <div id="dashSport"></div>
       </div>
     </div>
+
+    <!-- Row 4: Arbeit + Stundenplan -->
     <div class="dash-two-col">
       <div class="card">
         <div class="dash-section-title"><i class="fa fa-briefcase"></i> Aktuelle Arbeitsperiode <button class="dash-nav-link" onclick="navigateByName('arbeit')">Öffnen →</button></div>
@@ -2935,8 +2940,10 @@ function wkMSoll(){return wkMAT.reduce((s,d)=>s+(wkMTS[d]!==undefined?Number(wkM
 
 function wkOpenNewPeriodModal() {
   const today=new Date(); let y=today.getFullYear(),m=today.getMonth();
-  if(today.getDate()>=16){m++;if(m>11){m=0;y++;}}
-  const defS=new Date(y,m>0?m-1:11,16), defE=new Date(y,m,15);
+  // Use saved period bounds if available
+  const _pb = { startDay: parseInt(localStorage.getItem('sp_period_start_day')||'16'), endDay: parseInt(localStorage.getItem('sp_period_end_day')||'15') };
+  if(today.getDate()>=_pb.startDay){m++;if(m>11){m=0;y++;}}
+  const defS=new Date(y,m>0?m-1:11,_pb.startDay), defE=new Date(y,m,_pb.endDay);
   const fmt=d=>d.toISOString().slice(0,10);
   const lp=wkState.periods[wkState.periods.length-1];
   wkMAT=[...(lp?lp.arbeitstage:[1,4])];
@@ -3424,6 +3431,11 @@ function renderDashboard() {
         metaBox('Überstunden', wkFmtH(c2.zoneOT), '#7c3aed') +
       '</div>';
   }
+
+  // Kalender
+  renderDashKal();
+  // Checkliste inline
+  renderDashboardChecklist();
 
   // Stundenplan heute
   const spEl = document.getElementById('dashStundenplan');
@@ -3992,6 +4004,12 @@ function openMassImportModal() {
   const s = wkState.settings || {};
   if (s.stundenlohn) document.getElementById('massImportLohn').value = s.stundenlohn;
   if (s.defaultMaxWoche) document.getElementById('massImportSpielraum').value = s.defaultMaxWoche;
+  // Pre-fill period bounds from saved values
+  const savedStart = localStorage.getItem('sp_period_start_day') || '16';
+  const savedEnd   = localStorage.getItem('sp_period_end_day')   || '15';
+  document.getElementById('massImportPeriodStart').value = savedStart;
+  document.getElementById('massImportPeriodEnd').value = savedEnd;
+  massUpdatePeriodHint();
   openModal('massImportModal');
 }
 
@@ -4083,16 +4101,22 @@ function massImportParseRows(rows) {
   }
 
   // Figure out period boundaries: 16th of month to 15th of next month
+  // Get configurable period boundaries
+  const bounds = massGetPeriodBounds();
+  const pStartDay = bounds.startDay, pEndDay = bounds.endDay;
+
   function getPeriodKey(dateStr) {
     const d = new Date(dateStr + 'T12:00:00');
     const day = d.getDate(), month = d.getMonth(), year = d.getFullYear();
-    // If day >= 16: period starts this month 16th
-    // If day <= 15: period started previous month 16th
+    // If day >= pStartDay: period starts this month
+    // Otherwise: period started previous month
     let pStartMonth, pStartYear;
-    if (day >= 16) { pStartMonth = month; pStartYear = year; }
+    if (day >= pStartDay) { pStartMonth = month; pStartYear = year; }
     else { pStartMonth = month - 1; pStartYear = year; if (pStartMonth < 0) { pStartMonth = 11; pStartYear--; } }
-    const pStart = new Date(pStartYear, pStartMonth, 16);
-    const pEnd = new Date(pStartMonth === 11 ? pStartYear + 1 : pStartYear, (pStartMonth + 1) % 12, 15);
+    const pStart = new Date(pStartYear, pStartMonth, pStartDay);
+    const endMonth = (pStartMonth + 1) % 12;
+    const endYear = pStartMonth === 11 ? pStartYear + 1 : pStartYear;
+    const pEnd = new Date(endYear, endMonth, pEndDay);
     return {
       key: pStart.toISOString().slice(0, 10),
       startDate: pStart.toISOString().slice(0, 10),
@@ -4654,22 +4678,17 @@ async function startupWithAuth() {
 // =====================================================
 const ALL_MODULES = [
   // Uni
-  { id: 'stundenplan',     label: 'Stundenplan',         icon: 'fa-calendar-week',  desc: 'Wöchentlicher Stundenplan',         group: 'uni' },
-  { id: 'aufgaben',        label: 'Uni-Aufgaben',         icon: 'fa-check-square',   desc: 'Aufgaben und To-Dos',               group: 'uni' },
-  { id: 'abgaben',         label: 'Abgaben',              icon: 'fa-clock',          desc: 'Abgabefristen im Blick',            group: 'uni' },
+  { id: 'stundenplan',   label: 'Stundenplan',    icon: 'fa-calendar-week', desc: 'Wöchentlicher Stundenplan',    group: 'uni' },
+  { id: 'aufgaben',      label: 'Uni-Aufgaben',   icon: 'fa-check-square',  desc: 'Aufgaben und To-Dos',          group: 'uni' },
+  { id: 'abgaben',       label: 'Abgaben',         icon: 'fa-clock',         desc: 'Abgabefristen im Blick',       group: 'uni' },
   // Arbeit
-  { id: 'arbeitskalender', label: 'Arbeitskalender',      icon: 'fa-calendar-days',  desc: 'Termine rund um die Arbeit',        group: 'arbeit' },
-  { id: 'arbeit',          label: 'Arbeitszeiten',        icon: 'fa-business-time',  desc: 'Werkstudenten-Zeiterfassung',       group: 'arbeit' },
-  { id: 'checkliste-arbeit', label: 'Arbeits-Checkliste', icon: 'fa-list-check',     desc: 'Aufgabenliste für die Arbeit',      group: 'arbeit' },
+  { id: 'arbeit',        label: 'Arbeitszeiten',   icon: 'fa-business-time', desc: 'Werkstudenten-Zeiterfassung',  group: 'arbeit' },
   // Sport
-  { id: 'sport',           label: 'Aktivitäten',          icon: 'fa-running',        desc: 'Sportplan und Aktivitäten',         group: 'sport' },
-  { id: 'trainingsplan',   label: 'Trainingsplan',        icon: 'fa-chart-line',     desc: 'Strukturierter Trainingsplan',      group: 'sport' },
-  // Privates
-  { id: 'privatkalender',  label: 'Privatkalender',       icon: 'fa-calendar',       desc: 'Persönliche Termine',               group: 'privat' },
-  { id: 'checkliste',      label: 'Privat-Checkliste',    icon: 'fa-list-check',     desc: 'Persönliche Aufgabenliste',         group: 'privat' },
+  { id: 'sport',         label: 'Aktivitäten',     icon: 'fa-running',       desc: 'Sportplan und Aktivitäten',    group: 'sport' },
+  { id: 'trainingsplan', label: 'Trainingsplan',   icon: 'fa-chart-line',    desc: 'Strukturierter Trainingsplan', group: 'sport' },
 ];
 const MODULE_STORE_KEY = 'sp_active_modules';
-const DEFAULT_MODULES = ['stundenplan','aufgaben','abgaben','arbeitskalender','arbeit','checkliste-arbeit','sport','trainingsplan','privatkalender','checkliste'];
+const DEFAULT_MODULES = ['stundenplan','aufgaben','abgaben','arbeit','sport','trainingsplan'];
 
 let wizardSelected = new Set(DEFAULT_MODULES);
 
@@ -5003,6 +5022,8 @@ function kalSave() {
   kalRender(type);
   showToast('Termin gespeichert');
   refreshDashboardIfVisible();
+  // also re-render if we're on uebersicht
+  if (document.getElementById('page-uebersicht') && document.getElementById('page-uebersicht').classList.contains('active')) renderDashKal();
 }
 
 function kalDelete() {
@@ -5089,40 +5110,141 @@ function renderChecklistArbeit() {
   }).join('');
 }
 
+
+// =====================================================
+// DASHBOARD KALENDER (integriert in Übersicht)
+// =====================================================
+let dashKalMonth = new Date();
+dashKalMonth.setDate(1);
+
+function dashKalPrev() { dashKalMonth.setMonth(dashKalMonth.getMonth()-1); renderDashKal(); }
+function dashKalNext() { dashKalMonth.setMonth(dashKalMonth.getMonth()+1); renderDashKal(); }
+
+function renderDashKal() {
+  const el = document.getElementById('dashKalGrid');
+  const label = document.getElementById('dashKalLabel');
+  if (!el) return;
+
+  const year = dashKalMonth.getFullYear();
+  const month = dashKalMonth.getMonth();
+  const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  if (label) label.textContent = monthNames[month] + ' ' + year;
+
+  const today = todayISO();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+  // Collect events from all sources
+  function getEventsForDate(dateStr) {
+    const events = [];
+    // Custom kalender entries
+    const kalData = kalGetData('privat');
+    kalData.forEach(function(e) {
+      if (e.date === dateStr) events.push({ title: e.title, time: e.time, color: 'var(--accent)', source: 'kal', id: e.id });
+    });
+    // Abgaben
+    const abgaben = getAbgaben ? getAbgaben() : [];
+    abgaben.forEach(function(a) {
+      if (a.datum === dateStr) events.push({ title: a.titel, time: '', color: 'var(--orange)', source: 'abgabe', fach: a.fach });
+    });
+    // Arbeitszeiten (days with entries)
+    if (typeof wkState !== 'undefined' && wkState.periods) {
+      wkState.periods.forEach(function(p) {
+        const day = p.days && p.days.find(function(d) { return d.date === dateStr && d.start && d.end; });
+        if (day) events.push({ title: day.start + '\u2013' + day.end, time: day.start, color: '#2EC4B6', source: 'arbeit' });
+      });
+    }
+    return events;
+  }
+
+  // Week day headers
+  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px">';
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(function(d) {
+    html += '<div style="text-align:center;font-size:0.68rem;font-weight:600;color:var(--text-3);padding:3px">' + d + '</div>';
+  });
+  html += '</div>';
+
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">';
+  for (let i = 0; i < startOffset; i++) html += '<div style="min-height:60px"></div>';
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    const isToday = dateStr === today;
+    const isWeekend = (startOffset + day - 1) % 7 >= 5;
+    const events = getEventsForDate(dateStr);
+
+    html += '<div style="min-height:60px;border:1px solid var(--border);border-radius:6px;padding:3px 4px;background:'
+      + (isToday ? 'var(--accent-dim)' : isWeekend ? 'var(--surface2)' : 'var(--surface)')
+      + ';cursor:pointer;transition:background 0.1s" onclick="kalOpenNew(\'privat\',\'' + dateStr + '\')">'
+      + '<div style="font-size:0.72rem;font-weight:' + (isToday?'800':'500') + ';color:' + (isToday?'var(--accent)':'var(--text-2)') + ';margin-bottom:2px">' + day + '</div>'
+      + events.slice(0,2).map(function(e) {
+          const click = e.source === 'kal'
+            ? 'event.stopPropagation();kalOpenEdit(\'privat\',\'' + e.id + '\')'
+            : 'event.stopPropagation()';
+          return '<div style="font-size:0.6rem;background:' + e.color + ';color:#fff;border-radius:2px;padding:1px 3px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" onclick="' + click + '">'
+            + (e.time ? e.time.slice(0,5)+' ' : '') + escHtml(e.title) + '</div>';
+        }).join('')
+      + (events.length > 2 ? '<div style="font-size:0.58rem;color:var(--text-3)">+' + (events.length-2) + '</div>' : '')
+      + '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// =====================================================
+// CHECKLISTE: render inline in dashboard
+// =====================================================
+function renderDashboardChecklist() {
+  const container = document.getElementById('dashChecklist');
+  if (!container) return;
+  const data = getChecklist();
+  const today = todayISO();
+  const todayItems = data[today] || [];
+
+  if (!todayItems.length) {
+    container.innerHTML = '<div class="dash-empty-hint">Noch nichts für heute</div>';
+    return;
+  }
+  container.innerHTML = todayItems.map(function(item) {
+    const borderColor = item.done ? 'var(--accent)' : 'var(--border)';
+    const bgColor = item.done ? 'var(--accent)' : 'none';
+    return '<div class="dash-task-row" style="padding:6px 0">'
+      + '<div style="width:16px;height:16px;border-radius:4px;border:2px solid ' + borderColor + ';background:' + bgColor + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer" onclick="toggleChecklistItem(\'' + today + '\',\'' + item.id + '\')">'
+      + (item.done ? '<span style="color:white;font-size:0.6rem">✓</span>' : '')
+      + '</div>'
+      + '<span class="dash-task-name" style="' + (item.done ? 'text-decoration:line-through;opacity:0.5' : '') + ';cursor:pointer" onclick="toggleChecklistItem(\'' + today + '\',\'' + item.id + '\')">' + escHtml(item.text) + '</span>'
+      + '<button style="background:none;border:none;color:var(--text-3);cursor:pointer;padding:2px 4px;font-size:0.7rem" onclick="deleteChecklistItem(\'' + today + '\',\'' + item.id + '\')"><i class="fa fa-times"></i></button>'
+      + '</div>';
+  }).join('');
+}
+
+
+// =====================================================
+// CONFIGURABLE PERIOD BOUNDARIES (Massenimport)
+// =====================================================
+function massGetPeriodBounds() {
+  const startDay = parseInt(document.getElementById('massImportPeriodStart')?.value || '16');
+  const endDay   = parseInt(document.getElementById('massImportPeriodEnd')?.value   || '15');
+  return { startDay: Math.max(1, Math.min(28, startDay)), endDay: Math.max(1, Math.min(28, endDay)) };
+}
+
+function massUpdatePeriodHint() {
+  const { startDay, endDay } = massGetPeriodBounds();
+  const mn = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const now = new Date();
+  const hint = document.getElementById('massImportPeriodHint');
+  if (hint) hint.textContent = 'z.B. ' + startDay + '. ' + mn[now.getMonth()] + ' \u2192 ' + endDay + '. ' + mn[(now.getMonth()+1)%12];
+  // Re-parse if file already loaded
+  if (massImportPreviewData) massImportRenderPreview();
+}
+
 </script>
 
 
-  <!-- ===== ARBEITSKALENDER ===== -->
-  <section class="page" id="page-arbeitskalender">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Arbeits<span>kalender</span></h1>
-        <p class="page-subtitle">Termine und Ereignisse rund um die Arbeit</p>
-      </div>
-      <button class="btn btn-primary" onclick="kalOpenNew('arbeit')"><i class="fa fa-plus"></i> Termin</button>
-    </div>
-    <div id="kalArbeitView"></div>
-  </section>
+  
 
-  <!-- ===== CHECKLISTE ARBEIT ===== -->
-  <section class="page" id="page-checkliste-arbeit">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Arbeits-<span>Checkliste</span></h1>
-        <p class="page-subtitle">Aufgaben für die Arbeit</p>
-      </div>
-    </div>
-    <div class="checklist-date-header">
-      <div class="checklist-date-label" id="checklistArbeitDateLabel">Heute: <span>—</span></div>
-      <div id="checklistArbeitProgress" style="font-size:0.82rem;color:var(--text-2);"></div>
-    </div>
-    <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistArbeitProgressFill" style="width:0%"></div></div>
-    <div class="checklist-add-row">
-      <input type="text" id="checklistArbeitInput" placeholder="Neue Aufgabe hinzufügen…" onkeydown="if(event.key==='Enter')addChecklistArbeitItem()">
-      <button class="btn btn-primary" onclick="addChecklistArbeitItem()"><i class="fa fa-plus"></i></button>
-    </div>
-    <div class="checklist-items" id="checklistArbeitItems"></div>
-  </section>
+  
 
   <!-- ===== TRAININGSPLAN ===== -->
   <section class="page" id="page-trainingsplan">
@@ -5144,17 +5266,7 @@ function renderChecklistArbeit() {
     </div>
   </section>
 
-  <!-- ===== PRIVATKALENDER ===== -->
-  <section class="page" id="page-privatkalender">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Privat<span>kalender</span></h1>
-        <p class="page-subtitle">Persönliche Termine und Ereignisse</p>
-      </div>
-      <button class="btn btn-primary" onclick="kalOpenNew('privat')"><i class="fa fa-plus"></i> Termin</button>
-    </div>
-    <div id="kalPrivatView"></div>
-  </section>
+  
 
   <!-- KALENDER MODAL -->
   <div class="modal-overlay" id="kalModal" onclick="if(event.target===this)closeModal('kalModal')">
@@ -5227,7 +5339,7 @@ function renderChecklistArbeit() {
 
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-size:0.78rem;color:var(--text-2);margin-bottom:14px;line-height:1.8">
       <strong>Format:</strong> Spalten <code>Datum</code> | <code>Beginn</code> | <code>Ende</code> &ndash; einfach alle Eintr&auml;ge untereinander.<br>
-      Der Importer gruppiert automatisch nach Abrechnungsperioden (16.&ndash;15.) und legt fehlende Perioden an.<br>
+      Der Importer gruppiert automatisch nach den eingestellten Abrechnungsperioden und legt fehlende Perioden an.<br>
       <strong>Neue Perioden</strong> erhalten die Standardeinstellungen aus den Einstellungen (Arbeitstage, Spielraum).
     </div>
 
@@ -5235,6 +5347,25 @@ function renderChecklistArbeit() {
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px">
       <div style="font-size:0.78rem;font-weight:600;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em">Einstellungen f&uuml;r automatisch angelegte Perioden</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.82rem">
+        <div>
+          <label style="font-size:0.72rem;color:var(--text-3);display:block;margin-bottom:4px">PERIODE BEGINNT AM (Tag)</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="massImportPeriodStart" value="16" min="1" max="28" step="1"
+              style="width:60px;border:1.5px solid var(--accent);border-radius:var(--radius-sm);padding:5px 8px;font-size:0.88rem;background:var(--surface);color:var(--text)"
+              onchange="massUpdatePeriodHint()">
+            <span style="font-size:0.78rem;color:var(--text-3)">. des Monats</span>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.72rem;color:var(--text-3);display:block;margin-bottom:4px">PERIODE ENDET AM (Tag)</label>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" id="massImportPeriodEnd" value="15" min="1" max="28" step="1"
+              style="width:60px;border:1.5px solid var(--accent);border-radius:var(--radius-sm);padding:5px 8px;font-size:0.88rem;background:var(--surface);color:var(--text)"
+              onchange="massUpdatePeriodHint()">
+            <span style="font-size:0.78rem;color:var(--text-3)">. des Folgemonats</span>
+          </div>
+          <div id="massImportPeriodHint" style="font-size:0.7rem;color:var(--text-3);margin-top:4px">z.B. 16. Okt → 15. Nov</div>
+        </div>
         <div>
           <label style="font-size:0.72rem;color:var(--text-3);display:block;margin-bottom:4px">ARBEITSTAGE</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap" id="massImportDayPicker">
