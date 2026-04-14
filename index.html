@@ -1237,6 +1237,39 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
 .toast.error .toast-icon { color: var(--red); }
 @keyframes toastIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 @keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateY(8px); } }
+
+/* ===== GROUPED SIDEBAR NAV ===== */
+.nav-group { margin-bottom: 4px; }
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px 5px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+  user-select: none;
+}
+.nav-group-header:hover { background: rgba(255,255,255,0.04); }
+.nav-group-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.nav-group-chevron {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.25);
+  transition: transform 0.2s ease;
+}
+.nav-group.open .nav-group-chevron { transform: rotate(180deg); }
+.nav-group-items { display: none; }
+.nav-group.open .nav-group-items { display: block; }
+.nav-item-sub {
+  padding-left: 28px !important;
+  font-size: 0.82rem !important;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1315,28 +1348,81 @@ label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); display: blo
     <div class="logo-text">Studienplaner</div>
     <div class="logo-sub">Dein akademischer Alltag</div>
   </div>
-  <div class="sidebar-nav">
-    <button class="nav-item active" onclick="navigate('uebersicht', this)">
+  <div class="sidebar-nav" id="sidebarNav">
+    <!-- Übersicht -->
+    <button class="nav-item active" onclick="navigate('uebersicht', this)" data-page="uebersicht">
       <i class="fa fa-house"></i> Übersicht
     </button>
-    <button class="nav-item" onclick="navigate('stundenplan', this)">
-      <i class="fa fa-calendar-week"></i> Stundenplan
-    </button>
-    <button class="nav-item" onclick="navigate('aufgaben', this)">
-      <i class="fa fa-check-square"></i> Uni-Aufgaben
-    </button>
-    <button class="nav-item" onclick="navigate('abgaben', this)">
-      <i class="fa fa-clock"></i> Abgaben
-    </button>
-    <button class="nav-item" onclick="navigate('sport', this)">
-      <i class="fa fa-running"></i> Sport
-    </button>
-    <button class="nav-item" onclick="navigate('arbeit', this)">
-      <i class="fa fa-briefcase"></i> Arbeitstage
-    </button>
-    <button class="nav-item" onclick="navigate('checkliste', this)">
-      <i class="fa fa-list-check"></i> Tages-Checkliste
-    </button>
+
+    <!-- Uni -->
+    <div class="nav-group open" id="navGroup-uni">
+      <div class="nav-group-header" onclick="toggleNavGroup('uni')">
+        <span class="nav-group-label"><i class="fa fa-graduation-cap" style="margin-right:5px;font-size:0.65rem"></i>Uni</span>
+        <i class="fa fa-chevron-down nav-group-chevron"></i>
+      </div>
+      <div class="nav-group-items">
+        <button class="nav-item nav-item-sub" onclick="navigate('stundenplan', this)" data-page="stundenplan">
+          <i class="fa fa-calendar-week"></i> Stundenplan
+        </button>
+        <button class="nav-item nav-item-sub" onclick="navigate('aufgaben', this)" data-page="aufgaben">
+          <i class="fa fa-check-square"></i> Aufgaben
+        </button>
+        <button class="nav-item nav-item-sub" onclick="navigate('abgaben', this)" data-page="abgaben">
+          <i class="fa fa-clock"></i> Abgaben
+        </button>
+      </div>
+    </div>
+
+    <!-- Arbeit -->
+    <div class="nav-group open" id="navGroup-arbeit">
+      <div class="nav-group-header" onclick="toggleNavGroup('arbeit')">
+        <span class="nav-group-label"><i class="fa fa-briefcase" style="margin-right:5px;font-size:0.65rem"></i>Arbeit</span>
+        <i class="fa fa-chevron-down nav-group-chevron"></i>
+      </div>
+      <div class="nav-group-items">
+        <button class="nav-item nav-item-sub" onclick="navigate('arbeitskalender', this)" data-page="arbeitskalender">
+          <i class="fa fa-calendar-days"></i> Kalender
+        </button>
+        <button class="nav-item nav-item-sub" onclick="navigate('arbeit', this)" data-page="arbeit">
+          <i class="fa fa-business-time"></i> Arbeitszeiten
+        </button>
+        <button class="nav-item nav-item-sub" onclick="navigate('checkliste-arbeit', this)" data-page="checkliste-arbeit">
+          <i class="fa fa-list-check"></i> Checkliste
+        </button>
+      </div>
+    </div>
+
+    <!-- Sport -->
+    <div class="nav-group open" id="navGroup-sport">
+      <div class="nav-group-header" onclick="toggleNavGroup('sport')">
+        <span class="nav-group-label"><i class="fa fa-dumbbell" style="margin-right:5px;font-size:0.65rem"></i>Sport</span>
+        <i class="fa fa-chevron-down nav-group-chevron"></i>
+      </div>
+      <div class="nav-group-items">
+        <button class="nav-item nav-item-sub" onclick="navigate('sport', this)" data-page="sport">
+          <i class="fa fa-running"></i> Aktivitäten
+        </button>
+        <button class="nav-item nav-item-sub" onclick="navigate('trainingsplan', this)" data-page="trainingsplan">
+          <i class="fa fa-chart-line"></i> Trainingsplan
+        </button>
+      </div>
+    </div>
+
+    <!-- Privates -->
+    <div class="nav-group open" id="navGroup-privat">
+      <div class="nav-group-header" onclick="toggleNavGroup('privat')">
+        <span class="nav-group-label"><i class="fa fa-user" style="margin-right:5px;font-size:0.65rem"></i>Privates</span>
+        <i class="fa fa-chevron-down nav-group-chevron"></i>
+      </div>
+      <div class="nav-group-items">
+        <button class="nav-item nav-item-sub" onclick="navigate('privatkalender', this)" data-page="privatkalender">
+          <i class="fa fa-calendar"></i> Kalender
+        </button>
+        <button class="nav-item nav-item-sub" onclick="navigate('checkliste', this)" data-page="checkliste">
+          <i class="fa fa-list-check"></i> Checkliste
+        </button>
+      </div>
+    </div>
   </div>
   <div class="sidebar-bottom">
     <!-- User account button (shown when logged in) -->
@@ -1753,12 +1839,16 @@ const DAYS = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag'];
 function navigate(page, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  el.classList.add('active');
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.add('active');
+  if (el) el.classList.add('active');
   if (window.innerWidth <= 768) toggleSidebar();
   if (page === 'uebersicht') renderDashboard();
   if (page === 'arbeit') { wkRenderTabs(); wkRenderContent(); }
   if (page === 'checkliste') renderChecklist();
+  if (page === 'checkliste-arbeit') renderChecklistArbeit();
+  if (page === 'arbeitskalender') kalRender('arbeit');
+  if (page === 'privatkalender') kalRender('privat');
 }
 
 function refreshDashboardIfVisible() {
@@ -4518,6 +4608,7 @@ function initApp() {
   renderSport();
   initArbeit();
   renderChecklist();
+  renderChecklistArbeit();
   initModules();
 }
 
@@ -4562,15 +4653,23 @@ async function startupWithAuth() {
 // MODULE SYSTEM
 // =====================================================
 const ALL_MODULES = [
-  { id: 'stundenplan', label: 'Stundenplan',      icon: 'fa-calendar-week', desc: 'Wöchentlicher Stundenplan' },
-  { id: 'aufgaben',   label: 'Uni-Aufgaben',      icon: 'fa-check-square',  desc: 'Aufgaben und To-Dos' },
-  { id: 'abgaben',    label: 'Abgaben',            icon: 'fa-clock',         desc: 'Abgabefristen im Blick' },
-  { id: 'sport',      label: 'Sport',              icon: 'fa-running',       desc: 'Sportplan und Aktivitäten' },
-  { id: 'arbeit',     label: 'Arbeitszeiten',      icon: 'fa-briefcase',     desc: 'Werkstudenten-Zeiterfassung' },
-  { id: 'checkliste', label: 'Tages-Checkliste',   icon: 'fa-list-check',    desc: 'Tägliche Aufgabenliste' },
+  // Uni
+  { id: 'stundenplan',     label: 'Stundenplan',         icon: 'fa-calendar-week',  desc: 'Wöchentlicher Stundenplan',         group: 'uni' },
+  { id: 'aufgaben',        label: 'Uni-Aufgaben',         icon: 'fa-check-square',   desc: 'Aufgaben und To-Dos',               group: 'uni' },
+  { id: 'abgaben',         label: 'Abgaben',              icon: 'fa-clock',          desc: 'Abgabefristen im Blick',            group: 'uni' },
+  // Arbeit
+  { id: 'arbeitskalender', label: 'Arbeitskalender',      icon: 'fa-calendar-days',  desc: 'Termine rund um die Arbeit',        group: 'arbeit' },
+  { id: 'arbeit',          label: 'Arbeitszeiten',        icon: 'fa-business-time',  desc: 'Werkstudenten-Zeiterfassung',       group: 'arbeit' },
+  { id: 'checkliste-arbeit', label: 'Arbeits-Checkliste', icon: 'fa-list-check',     desc: 'Aufgabenliste für die Arbeit',      group: 'arbeit' },
+  // Sport
+  { id: 'sport',           label: 'Aktivitäten',          icon: 'fa-running',        desc: 'Sportplan und Aktivitäten',         group: 'sport' },
+  { id: 'trainingsplan',   label: 'Trainingsplan',        icon: 'fa-chart-line',     desc: 'Strukturierter Trainingsplan',      group: 'sport' },
+  // Privates
+  { id: 'privatkalender',  label: 'Privatkalender',       icon: 'fa-calendar',       desc: 'Persönliche Termine',               group: 'privat' },
+  { id: 'checkliste',      label: 'Privat-Checkliste',    icon: 'fa-list-check',     desc: 'Persönliche Aufgabenliste',         group: 'privat' },
 ];
 const MODULE_STORE_KEY = 'sp_active_modules';
-const DEFAULT_MODULES = ['stundenplan','aufgaben','abgaben','sport','arbeit','checkliste'];
+const DEFAULT_MODULES = ['stundenplan','aufgaben','abgaben','arbeitskalender','arbeit','checkliste-arbeit','sport','trainingsplan','privatkalender','checkliste'];
 
 let wizardSelected = new Set(DEFAULT_MODULES);
 
@@ -4590,16 +4689,21 @@ function applyModules(activeIds) {
   // Show/hide nav items and pages
   ALL_MODULES.forEach(function(m) {
     const active = activeIds.includes(m.id);
-    // Nav item
-    const navBtns = document.querySelectorAll('.nav-item');
-    navBtns.forEach(function(btn) {
-      if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + m.id + "'")) {
-        btn.style.display = active ? '' : 'none';
-      }
-    });
+    // Nav item (match by data-page attribute)
+    const navBtn = document.querySelector('.nav-item[data-page="' + m.id + '"]');
+    if (navBtn) navBtn.style.display = active ? '' : 'none';
     // Page
     const page = document.getElementById('page-' + m.id);
     if (page) page.style.display = active ? '' : 'none';
+  });
+
+  // Hide group headers if all items in group are hidden
+  ['uni','arbeit','sport','privat'].forEach(function(gid) {
+    const group = document.getElementById('navGroup-' + gid);
+    if (!group) return;
+    const items = group.querySelectorAll('.nav-item');
+    const anyVisible = Array.from(items).some(function(btn) { return btn.style.display !== 'none'; });
+    group.style.display = anyVisible ? '' : 'none';
   });
 
   // If current page is hidden, go to overview
@@ -4721,7 +4825,359 @@ function initModules() {
   }
 }
 
+
+// =====================================================
+// GROUPED SIDEBAR
+// =====================================================
+function toggleNavGroup(id) {
+  const group = document.getElementById('navGroup-' + id);
+  if (!group) return;
+  group.classList.toggle('open');
+}
+
+// navigate() is already patched above
+
+// =====================================================
+// KALENDER MODULE (Arbeits- & Privatkalender)
+// =====================================================
+const KAL_STORE = { arbeit: 'sp_kal_arbeit', privat: 'sp_kal_privat' };
+
+function kalGetData(type) {
+  try { return JSON.parse(localStorage.getItem(KAL_STORE[type])) || []; } catch(e) { return []; }
+}
+function kalSetData(type, data) {
+  localStorage.setItem(KAL_STORE[type], JSON.stringify(data));
+}
+
+let kalCurrentType = 'privat';
+let kalCurrentMonth = new Date();
+kalCurrentMonth.setDate(1);
+
+function kalRender(type) {
+  kalCurrentType = type;
+  const el = document.getElementById('kal' + (type === 'arbeit' ? 'Arbeit' : 'Privat') + 'View');
+  if (!el) return;
+
+  const year = kalCurrentMonth.getFullYear();
+  const month = kalCurrentMonth.getMonth();
+  const monthNames = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const data = kalGetData(type);
+
+  // Days in month
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = (firstDay === 0 ? 6 : firstDay - 1); // Mon=0
+
+  const today = new Date().toISOString().slice(0,10);
+
+  let html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+    + '<button class="btn btn-ghost btn-sm" onclick="kalPrevMonth(\'' + type + '\')"><i class="fa fa-chevron-left"></i></button>'
+    + '<span style="font-family:var(--font-head);font-size:1.1rem;font-weight:700">' + monthNames[month] + ' ' + year + '</span>'
+    + '<button class="btn btn-ghost btn-sm" onclick="kalNextMonth(\'' + type + '\')"><i class="fa fa-chevron-right"></i></button>'
+    + '</div>';
+
+  // Week headers
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px">';
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(function(d) {
+    html += '<div style="text-align:center;font-size:0.72rem;font-weight:600;color:var(--text-3);padding:4px">' + d + '</div>';
+  });
+  html += '</div>';
+
+  // Calendar grid
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+
+  // Empty cells before first day
+  for (let i = 0; i < startOffset; i++) {
+    html += '<div style="min-height:72px"></div>';
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    const isToday = dateStr === today;
+    const dayEvents = data.filter(function(e) { return e.date === dateStr; }).sort(function(a,b) { return (a.time||'').localeCompare(b.time||''); });
+    const isWeekend = (startOffset + day - 1) % 7 >= 5;
+
+    html += '<div style="min-height:72px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;background:' 
+      + (isToday ? 'var(--accent-dim)' : isWeekend ? 'var(--surface2)' : 'var(--surface)') + ';cursor:pointer" '
+      + 'onclick="kalOpenNew(\'' + type + '\',\'' + dateStr + '\')">'
+      + '<div style="font-size:0.75rem;font-weight:' + (isToday?'700':'500') + ';color:' + (isToday?'var(--accent)':'var(--text-2)') + ';margin-bottom:3px">' + day + '</div>'
+      + dayEvents.slice(0,3).map(function(e) {
+          return '<div style="font-size:0.65rem;background:var(--accent);color:#fff;border-radius:3px;padding:1px 4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" '
+            + 'onclick="event.stopPropagation();kalOpenEdit(\'' + type + '\',\'' + e.id + '\')">'
+            + (e.time ? e.time.slice(0,5) + ' ' : '') + escHtml(e.title)
+            + '</div>';
+        }).join('')
+      + (dayEvents.length > 3 ? '<div style="font-size:0.62rem;color:var(--text-3)">+' + (dayEvents.length-3) + ' weitere</div>' : '')
+      + '</div>';
+  }
+  html += '</div>';
+
+  // Event list below calendar for current month
+  const monthEvents = data.filter(function(e) {
+    return e.date && e.date.startsWith(year + '-' + String(month+1).padStart(2,'0'));
+  }).sort(function(a,b) { return a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||''); });
+
+  if (monthEvents.length) {
+    html += '<div style="margin-top:20px"><div style="font-size:0.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Termine diesen Monat</div>';
+    html += monthEvents.map(function(e) {
+      const d = new Date(e.date + 'T12:00:00');
+      const dn = ['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()];
+      return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer" onclick="kalOpenEdit(\'' + type + '\',\'' + e.id + '\')">'
+        + '<div style="text-align:center;min-width:40px"><div style="font-size:0.65rem;color:var(--text-3)">' + dn + '</div><div style="font-weight:700;font-size:1rem;font-family:var(--font-head)">' + d.getDate() + '</div></div>'
+        + '<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:0.9rem">' + escHtml(e.title) + '</div>'
+        + (e.time ? '<div style="font-size:0.75rem;color:var(--text-3)">' + e.time + ' Uhr</div>' : '')
+        + (e.note ? '<div style="font-size:0.75rem;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(e.note) + '</div>' : '')
+        + '</div>'
+        + '<i class="fa fa-chevron-right" style="color:var(--text-3);font-size:0.7rem"></i>'
+        + '</div>';
+    }).join('');
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function kalPrevMonth(type) {
+  kalCurrentMonth.setMonth(kalCurrentMonth.getMonth() - 1);
+  kalRender(type);
+}
+function kalNextMonth(type) {
+  kalCurrentMonth.setMonth(kalCurrentMonth.getMonth() + 1);
+  kalRender(type);
+}
+
+function kalOpenNew(type, date) {
+  kalCurrentType = type;
+  document.getElementById('kalModalTitle').textContent = 'Neuer Termin';
+  document.getElementById('kalModalType').value = type;
+  document.getElementById('kalModalId').value = '';
+  document.getElementById('kalTitle').value = '';
+  document.getElementById('kalDate').value = date || todayISO();
+  document.getElementById('kalTime').value = '';
+  document.getElementById('kalNote').value = '';
+  document.getElementById('kalDeleteBtn').style.display = 'none';
+  openModal('kalModal');
+}
+
+function kalOpenEdit(type, id) {
+  const data = kalGetData(type);
+  const ev = data.find(function(e) { return e.id === id; });
+  if (!ev) return;
+  kalCurrentType = type;
+  document.getElementById('kalModalTitle').textContent = 'Termin bearbeiten';
+  document.getElementById('kalModalType').value = type;
+  document.getElementById('kalModalId').value = id;
+  document.getElementById('kalTitle').value = ev.title || '';
+  document.getElementById('kalDate').value = ev.date || '';
+  document.getElementById('kalTime').value = ev.time || '';
+  document.getElementById('kalNote').value = ev.note || '';
+  document.getElementById('kalDeleteBtn').style.display = 'inline-flex';
+  openModal('kalModal');
+}
+
+function kalSave() {
+  const type = document.getElementById('kalModalType').value;
+  const id = document.getElementById('kalModalId').value;
+  const title = document.getElementById('kalTitle').value.trim();
+  const date = document.getElementById('kalDate').value;
+  if (!title || !date) { alert('Bitte Titel und Datum eingeben.'); return; }
+
+  const data = kalGetData(type);
+  const ev = {
+    id: id || uid(),
+    title: title,
+    date: date,
+    time: document.getElementById('kalTime').value,
+    note: document.getElementById('kalNote').value.trim(),
+  };
+
+  if (id) {
+    const idx = data.findIndex(function(e) { return e.id === id; });
+    if (idx >= 0) data[idx] = ev; else data.push(ev);
+  } else {
+    data.push(ev);
+  }
+
+  kalSetData(type, data);
+  closeModal('kalModal');
+  kalRender(type);
+  showToast('Termin gespeichert');
+  refreshDashboardIfVisible();
+}
+
+function kalDelete() {
+  const type = document.getElementById('kalModalType').value;
+  const id = document.getElementById('kalModalId').value;
+  if (!id) return;
+  const data = kalGetData(type).filter(function(e) { return e.id !== id; });
+  kalSetData(type, data);
+  closeModal('kalModal');
+  kalRender(type);
+  showToast('Termin gelöscht');
+}
+
+// =====================================================
+// CHECKLISTE ARBEIT (separate from main checklist)
+// =====================================================
+function getChecklistArbeit() {
+  try { return JSON.parse(localStorage.getItem('sp_checkliste_arbeit')) || {}; } catch(e) { return {}; }
+}
+function setChecklistArbeit(d) { localStorage.setItem('sp_checkliste_arbeit', JSON.stringify(d)); }
+
+function addChecklistArbeitItem() {
+  const input = document.getElementById('checklistArbeitInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const data = getChecklistArbeit();
+  const today = todayISO();
+  if (!data[today]) data[today] = [];
+  data[today].push({ id: uid(), text, done: false });
+  setChecklistArbeit(data);
+  input.value = '';
+  renderChecklistArbeit();
+}
+
+function toggleChecklistArbeitItem(date, id) {
+  const data = getChecklistArbeit();
+  if (!data[date]) return;
+  const item = data[date].find(function(x) { return x.id === id; });
+  if (item) item.done = !item.done;
+  setChecklistArbeit(data);
+  renderChecklistArbeit();
+}
+
+function deleteChecklistArbeitItem(date, id) {
+  const data = getChecklistArbeit();
+  if (!data[date]) return;
+  data[date] = data[date].filter(function(x) { return x.id !== id; });
+  setChecklistArbeit(data);
+  renderChecklistArbeit();
+}
+
+function renderChecklistArbeit() {
+  const today = todayISO();
+  const data = getChecklistArbeit();
+  const todayItems = data[today] || [];
+  const d = new Date(today + 'T00:00:00');
+  const days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+  const label = document.getElementById('checklistArbeitDateLabel');
+  if (label) label.innerHTML = 'Heute: <span>' + days[d.getDay()] + ', ' + d.getDate() + '. ' + months[d.getMonth()] + '</span>';
+
+  const done = todayItems.filter(function(x) { return x.done; }).length;
+  const total = todayItems.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+
+  const progress = document.getElementById('checklistArbeitProgress');
+  if (progress) progress.textContent = total ? done + '/' + total + ' erledigt' : '';
+  const fill = document.getElementById('checklistArbeitProgressFill');
+  if (fill) fill.style.width = pct + '%';
+
+  const items = document.getElementById('checklistArbeitItems');
+  if (!items) return;
+  if (!todayItems.length) {
+    items.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-3)">Noch keine Aufgaben für heute</div>';
+    return;
+  }
+  items.innerHTML = todayItems.map(function(item) {
+    return '<div class="checklist-item ' + (item.done?'done':'') + '">'
+      + '<button class="checklist-checkbox ' + (item.done?'checked':'') + '" onclick="toggleChecklistArbeitItem(\'' + today + '\',\'' + item.id + '\')"></button>'
+      + '<span class="checklist-label">' + escHtml(item.text) + '</span>'
+      + '<button class="btn-icon btn-sm" onclick="deleteChecklistArbeitItem(\'' + today + '\',\'' + item.id + '\')"><i class="fa fa-trash"></i></button>'
+      + '</div>';
+  }).join('');
+}
+
 </script>
+
+
+  <!-- ===== ARBEITSKALENDER ===== -->
+  <section class="page" id="page-arbeitskalender">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Arbeits<span>kalender</span></h1>
+        <p class="page-subtitle">Termine und Ereignisse rund um die Arbeit</p>
+      </div>
+      <button class="btn btn-primary" onclick="kalOpenNew('arbeit')"><i class="fa fa-plus"></i> Termin</button>
+    </div>
+    <div id="kalArbeitView"></div>
+  </section>
+
+  <!-- ===== CHECKLISTE ARBEIT ===== -->
+  <section class="page" id="page-checkliste-arbeit">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Arbeits-<span>Checkliste</span></h1>
+        <p class="page-subtitle">Aufgaben für die Arbeit</p>
+      </div>
+    </div>
+    <div class="checklist-date-header">
+      <div class="checklist-date-label" id="checklistArbeitDateLabel">Heute: <span>—</span></div>
+      <div id="checklistArbeitProgress" style="font-size:0.82rem;color:var(--text-2);"></div>
+    </div>
+    <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistArbeitProgressFill" style="width:0%"></div></div>
+    <div class="checklist-add-row">
+      <input type="text" id="checklistArbeitInput" placeholder="Neue Aufgabe hinzufügen…" onkeydown="if(event.key==='Enter')addChecklistArbeitItem()">
+      <button class="btn btn-primary" onclick="addChecklistArbeitItem()"><i class="fa fa-plus"></i></button>
+    </div>
+    <div class="checklist-items" id="checklistArbeitItems"></div>
+  </section>
+
+  <!-- ===== TRAININGSPLAN ===== -->
+  <section class="page" id="page-trainingsplan">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Trainings<span>plan</span></h1>
+        <p class="page-subtitle">Dein persönlicher Trainingsplan</p>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;padding:48px 32px">
+      <div style="font-size:3rem;margin-bottom:16px">🏋️</div>
+      <div style="font-family:var(--font-head);font-size:1.3rem;font-weight:700;margin-bottom:8px">Trainingsplan</div>
+      <div style="font-size:0.88rem;color:var(--text-2);max-width:360px;margin:0 auto 24px">
+        Hier wird bald dein strukturierter Trainingsplan verfügbar sein – mit Übungen, Sätzen, Wiederholungen und Fortschritts-Tracking.
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);border:1px solid rgba(232,72,85,0.2);border-radius:var(--radius);padding:10px 20px;font-size:0.82rem;color:var(--accent);font-weight:600">
+        <i class="fa fa-clock"></i> Demnächst verfügbar
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRIVATKALENDER ===== -->
+  <section class="page" id="page-privatkalender">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Privat<span>kalender</span></h1>
+        <p class="page-subtitle">Persönliche Termine und Ereignisse</p>
+      </div>
+      <button class="btn btn-primary" onclick="kalOpenNew('privat')"><i class="fa fa-plus"></i> Termin</button>
+    </div>
+    <div id="kalPrivatView"></div>
+  </section>
+
+  <!-- KALENDER MODAL -->
+  <div class="modal-overlay" id="kalModal" onclick="if(event.target===this)closeModal('kalModal')">
+    <div class="modal" style="max-width:460px;width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 class="modal-title" id="kalModalTitle">Neuer Termin</h2>
+        <button class="btn-icon" onclick="closeModal('kalModal')"><i class="fa fa-times"></i></button>
+      </div>
+      <input type="hidden" id="kalModalType">
+      <input type="hidden" id="kalModalId">
+      <div class="form-group"><label>Titel</label><input type="text" id="kalTitle" placeholder="Termin-Titel"></div>
+      <div class="form-grid form-grid-2" style="margin-top:12px">
+        <div class="form-group"><label>Datum</label><input type="date" id="kalDate"></div>
+        <div class="form-group"><label>Uhrzeit (optional)</label><input type="time" id="kalTime"></div>
+      </div>
+      <div class="form-group" style="margin-top:12px"><label>Notiz</label><textarea id="kalNote" rows="3" placeholder="Notizen…" style="resize:vertical"></textarea></div>
+      <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+        <button class="btn btn-danger btn-sm" id="kalDeleteBtn" style="display:none;margin-right:auto" onclick="kalDelete()"><i class="fa fa-trash"></i> Löschen</button>
+        <button class="btn btn-ghost" onclick="closeModal('kalModal')">Abbrechen</button>
+        <button class="btn btn-primary" onclick="kalSave()">Speichern</button>
+      </div>
+    </div>
+  </div>
 
 <!-- ===== IMPORT MODAL ===== -->
 <div class="modal-overlay" id="importModal" onclick="if(event.target===this)closeModal('importModal')">
