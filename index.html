@@ -2428,13 +2428,22 @@ function wkRenderTabs() {
   const tabs = document.getElementById('wkTabs');
   if (!tabs) return;
   const recent=[...wkState.periods].sort((a,b)=>b.startDate.localeCompare(a.startDate)).slice(0,4).reverse();
-  tabs.innerHTML = `
-    <button class="wk-tab ${wkView==='overview'?'active':''}" onclick="wkNavigate('overview')">Übersicht</button>
-    ${recent.map(p=>`<button class="wk-tab ${wkView==='period'&&wkCurrentPeriodId===p.id?'active':''}" onclick="wkShowPeriod(${JSON.stringify(p.id)})">${p.name}</button>`).join('')}
-    ${wkState.periods.length>4?`<span style="font-size:0.75rem;color:var(--text-3);padding:8px 4px;align-self:center">+${wkState.periods.length-4}</span>`:''}
-    <button class="wk-tab wk-tab-add" onclick="wkToggleDrawer()" title="Alle Perioden"><i class="fa fa-bars"></i></button>
-    <button class="wk-tab ${wkView==='settings'?'active':''}" onclick="wkNavigate('settings')" style="margin-left:auto"><i class="fa fa-cog"></i></button>
-  `;
+  tabs.innerHTML =
+    '<button class="wk-tab ' + (wkView==='overview'?'active':'') + '" onclick="wkNavigate(&quot;overview&quot;)">Übersicht</button>'
+    + recent.map(function(p) {
+        const active = wkView==='period' && wkCurrentPeriodId===p.id ? 'active' : '';
+        return '<button class="wk-tab ' + active + '" data-wkpid="' + p.id + '">' + escHtml(p.name) + '</button>';
+      }).join('')
+    + (wkState.periods.length>4 ? '<span style="font-size:0.75rem;color:var(--text-3);padding:8px 4px;align-self:center">+' + (wkState.periods.length-4) + '</span>' : '')
+    + '<button class="wk-tab wk-tab-add" onclick="wkToggleDrawer()" title="Alle Perioden"><i class="fa fa-bars"></i></button>'
+    + '<button class="wk-tab ' + (wkView==='settings'?'active':'') + '" onclick="wkNavigate(&quot;settings&quot;)" style="margin-left:auto"><i class="fa fa-cog"></i></button>';
+
+  // Attach click handlers via data attribute (avoids JSON.stringify in onclick)
+  tabs.querySelectorAll('[data-wkpid]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      wkShowPeriod(btn.dataset.wkpid);
+    });
+  });
 }
 
 function wkRenderContent() {
@@ -2456,13 +2465,23 @@ function wkToggleDrawer() {
 function wkRenderDrawer() {
   const sorted=[...wkState.periods].sort((a,b)=>b.startDate.localeCompare(a.startDate));
   const body=document.getElementById('wkDrawerBody');
-  body.innerHTML = sorted.length ? sorted.map(p=>{
+  body.innerHTML = sorted.length ? sorted.map(function(p){
     const c=wkCalcPeriod(p); const ok=c.saldoH>=-0.01;
-    return `<div class="wk-drawer-period ${wkView==='period'&&wkCurrentPeriodId===p.id?'active':''}" onclick="wkShowPeriod(${JSON.stringify(p.id)});wkToggleDrawer()">
-      <div><div class="wk-drawer-period-name">${escHtml(p.name)}</div><div class="wk-drawer-period-range">${p.startDate.split('-').reverse().join('.')} – ${p.endDate.split('-').reverse().join('.')}</div></div>
-      <span class="wk-badge ${ok?'wk-badge-ok':'wk-badge-warn'}">${wkFmtH(c.saldoH)}</span>
-    </div>`;
+    const div = '<div class="wk-drawer-period ' + (wkView==='period'&&wkCurrentPeriodId===p.id?'active':'') + '" data-wkpid="' + p.id + '" style="cursor:pointer">'
+      + '<div><div class="wk-drawer-period-name">' + escHtml(p.name) + '</div>'
+      + '<div class="wk-drawer-period-range">' + p.startDate.split('-').reverse().join('.') + ' – ' + p.endDate.split('-').reverse().join('.') + '</div></div>'
+      + '<span class="wk-badge ' + (ok?'wk-badge-ok':'wk-badge-warn') + '">' + wkFmtH(c.saldoH) + '</span>'
+      + '</div>';
+    return div;
   }).join('') : '<div style="text-align:center;padding:24px;color:var(--text-3);font-size:0.85rem">Noch keine Perioden</div>';
+
+  // Attach click via data attribute
+  body.querySelectorAll('[data-wkpid]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      wkShowPeriod(el.dataset.wkpid);
+      wkToggleDrawer();
+    });
+  });
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
@@ -2482,7 +2501,7 @@ function wkRenderOverview() {
   const rows = filtered.map(p=>{
     const c=wkCalcPeriod(p); tB+=c.brutto; tN+=c.netto; tI+=c.istH; tOT+=c.zoneOT;
     const ok=c.saldoH>=-0.01;
-    return `<tr onclick="wkShowPeriod(${JSON.stringify(p.id)})" style="cursor:pointer">
+    return `<tr data-wkpid="${p.id}" style="cursor:pointer">
       <td style="font-weight:600">${escHtml(p.name)}</td>
       <td style="color:var(--text-3);font-size:0.78rem">${p.startDate.split('-').reverse().join('.')} – ${p.endDate.split('-').reverse().join('.')}</td>
       <td>${wkFmtH(c.istH)}</td><td>${wkFmtH(c.effSoll)}</td>
@@ -2515,7 +2534,7 @@ function wkRenderOverview() {
       <div class="wk-metric"><div class="wk-metric-label">Netto</div><div class="wk-metric-val ok">${wkFmtE(tN)}</div></div>
     </div>
     <div class="card" style="padding:0;overflow:hidden">
-      <table class="wk-overview-table">
+      <table class="wk-overview-table" id="wkOverviewTable">
         <thead><tr><th>Periode</th><th>Zeitraum</th><th>Ist</th><th>Eff. Soll</th><th>Saldo</th><th>Spielraum</th><th>Überstunden</th><th>Netto</th></tr></thead>
         <tbody>${rows||`<tr><td colspan="8" style="text-align:center;color:var(--text-3);padding:32px">Keine Perioden im gewählten Filter.</td></tr>`}</tbody>
       </table>
@@ -2771,6 +2790,15 @@ function wkRefreshMetrics(p) {
 
 // ── Attach events ─────────────────────────────────────────────────────────────
 function wkAttachEvents() {
+  // Period row clicks (overview table + drawer) via data-wkpid
+  document.querySelectorAll('[data-wkpid]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      if (!e.target.closest('[data-field]')) {
+        wkShowPeriod(el.dataset.wkpid);
+      }
+    });
+  });
+
   document.querySelectorAll('[data-field]').forEach(el=>{
     const field=el.dataset.field, i=parseInt(el.dataset.i);
     if(field==='start'||field==='end'){
